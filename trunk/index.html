@@ -1,0 +1,159 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>Canvas Tests</title>
+		
+		<script type="text/javascript" src="lib/jquery/jquery-1.3.2.js"></script>
+		<script type="text/javascript" src="lib/mootools/mootools-1.2.3-core.js"></script>
+		<script type="text/javascript">
+		
+/*		var Box = new Class({
+			x: 0,
+			y: 0,
+			height: 25,
+			width: 25,
+			id: "",
+			color: "#00FF00",
+			initialize: function (initX, initY, width, height) {
+				this.x = initX || 0;
+				this.y = initY || 0;
+				this.width = width || 25;
+				this.height = height || 25;
+			}
+			
+		});
+		
+		var Level = new Class({
+			x: 0,
+			y: 0,
+			height: 150,
+			width: 150,
+			// reference to the canvas element
+			element: null,
+			ctx: null,
+			boxes: [],
+			initialize: function (element, height, width) {
+				// if undefined short cut
+				this.height = height || 150;
+				this.width = width || 150;
+				
+				if(typeof(element) == "undefined") {
+					alert('no element!');
+				} else {
+					this.element = element;
+					this.ctx = this.element.getContext('2d');
+				}
+				
+			},
+			addBox : function (initX, initY, width, height) {
+				this.boxes[++] = new Box(initX || 0, initY || 0, width || 25, height || 25);
+				this.refreshScreen(); 
+			},
+			refreshScreen : function () {},
+			drawScreen : function () {
+				$.each(this.boxes, function(i, box) {
+					this.ctx.
+				});
+			}
+		}); */
+		
+		var Observeable = new Class({
+			Implements: Events,
+			element: null,
+			offset: {x: 0, y: 0},
+			initialize: function (element) {
+				if(typeof(element) == "undefined")
+					return false;
+				
+				if(typeof(element) == "string")
+					this.element = document.getElementById(element);
+				
+				this.element = element;
+				var offset = this.getElementCoords();
+				this.offset.x = offset.x;
+				this.offset.y = offset.y;
+				
+				// Catch mouse movements
+//				$(document).bind("mousemove", null, this.mousemove());
+/*				$(document).mousemove(function (e) {
+					this.mousemove(e);
+				}); */
+			},
+			getEl : function () {
+				return this.element;
+			},
+			getElementCoords : function () {
+				var coords = {x: 0, y: 0};
+				var element = this.getEl();
+				while(element) {
+					coords.x += element.offsetLeft;
+					coords.y += element.offsetTop;
+					element = element.offsetParent;
+				}
+				return coords;
+			},
+			// events //
+			// --mouse events //
+			mousemove : function (e) {
+				alert(this);
+				$("#out").html(this.offset.x + " " + this.offset.y);
+				this.fireEvent("mousemove");
+			}
+			
+			
+		});
+		var canvas = null;
+		$(document).ready(function () {
+			
+			var canvas = new Observeable("tutorial");
+			
+			//var game = new Level($("#tutorial"));
+			
+			
+/*			$("#tutorial").mousedown(function (e) {
+				e.preventDefault();
+				$(this).mousemove(function (e) {
+					var x = e.pageX - 15;
+					var y = e.pageY - 15;
+/*					var ctx = this.getContext('2d');
+						ctx.save();
+						ctx.clearRect(0, 0, this.width, this.height);
+						ctx.fillRect(x, y, 25, 25);
+						ctx.restore(); 
+				});
+			}).mouseup(function (e) {
+				$(this).unbind("mousemove");
+			}).click(function (e) {
+				var ctx = this.getContext('2d');
+				ctx.save();
+				ctx.clearRect(0, 0, this.width, this.height);
+				ctx.fillRect(e.pageX - 9, e.pageY - 9, 25, 25);
+				ctx.restore(); 
+				
+				
+			}); */
+			
+/*			canvas = document.getElementById("tutorial");
+				var ctx = canvas.getContext("2d");
+				ctx.fillRect(0, 0, 50, 50);
+				ctx.fillRect(60, 60, 50, 50);
+			for(i in ctx.canvas) {
+				window.console.log(i);
+			} */
+ 				
+		});
+		</script>
+		<style type="text/css">
+			canvas {
+				border: 1px solid black;
+			}
+		</style>
+    </head>
+    <body onLoad="">
+        <canvas id="tutorial" width="150" height="150">
+        </canvas>
+		<div id="out">To be replaced</div>
+    </body>
+</html>
