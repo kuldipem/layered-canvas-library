@@ -702,6 +702,10 @@
 				 */
 				width : 0,
 				/**
+				 * @var layer {Canvas.Layer} The parent layer
+				 */
+				layer: null,
+				/**
 				 * Constructor for the Item object. It does some error checking
 				 * then returns the combined item. Takes the item json object 
 				 * as it's constructor, with the optional parent layer (Layer)
@@ -724,9 +728,22 @@
 							item.id += "_";
 						}
 					}
+					// Save the layer
+					this.layer = layer;
+					
 					// var a = new Canvas('test');var b = new Canvas.Layer({id: "Stff", items:[{draw: function(ctx) {ctx.fillRect(20, 20, 40, 40);};}, { draw: function (ctx) {ctx.fillRect(0, 0, 20, 20);} } ]});
 					return util.combine(this, item);
 					
+				},
+				/**
+				 * Returns the reference to the parent layer
+				 */
+				getLayer : function() {
+					if(typeof(this.layer) != "null") {
+						return this.layer;
+					} else {
+						return null;
+					}
 				},
 				/**
 				 * The draw handler, to be called at the layer level
@@ -755,6 +772,33 @@
 				 */
 				getID : function () {
 					return this.id;
+				},
+				/**
+				 * Returns the x position of item
+				 */
+				getX : function () {
+					if(typeof(this.x) == "number") {
+						return parseInt(this.x);
+					} else
+						return 0;
+				},
+				/**
+				 * Returns the y position of the item
+				 */
+				getY : function () {
+					if(typeof(this.y) == "number") {
+						return parseInt(this.y);
+					} else 
+						return 0;
+				},
+				/**
+				 * Returns the Z position of the item
+				 */
+				getZ : function () {
+					if(typeof(this.z) == "number") {
+						return parseInt(this.z);
+					} else
+						return 0;
 				},
 				/**
 				 * Returns the object type
