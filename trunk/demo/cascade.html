@@ -1,0 +1,66 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+		<title>Canvas, Cascade Demo</title>
+		<script type="text/javascript" src="../Canvas.js"></script>
+		<script type="text/javascript">
+			var canvas = null;
+			var lyr = null;
+			function init() {
+				canvas = new Canvas('cascade');
+				
+				var newItems = new Array();
+				
+				// Create 10 new boxes
+				for(i = 0;i<= 10;i++) {
+					newItems.push({
+						id: "item-"+i,
+						x: 0,
+						y: 0,
+						// ctx or context, is passed to the item by the layer
+						draw: function (ctx) {
+							// Generate a random color at draw time
+							var red = Math.floor(Math.random()*255);
+							var green = Math.floor(Math.random()*255);
+							var blue = Math.floor(Math.random()*255);
+							var alpha = Math.floor(Math.random()*100) / 100;
+							
+							// Set the fillStyle of the rectangle
+							ctx.fillStyle = "rgba(" +red+","+green+","+blue+","+alpha+")";
+							
+							// If it's not the first box, get the x/y of the last box, so that we can move to
+							// a position of x+10, and y+10							
+							if(i > 0) {
+								var parent = this.getLayer();
+								var lastItem = parent.getItemAt(i - 1);
+								var lastX = lastItem.getX();
+								var lastY = lastItem.getY();
+								
+								this.x = parseInt(lastX + 10);
+								this.y = parseInt(lastY + 10);
+							}
+							// Move to the next position
+							ctx.moveTo(this.x, this.y);
+							
+							// Finally fill the rectangle
+							ctx.fillRect(this.x, this.y, 40, 40); 
+						}
+					});
+				}
+				
+				// Now that the boxes are defined, create a layer to hold them
+				lyr = new Canvas.Layer({
+					id: "layer",
+					items: newItems
+				});
+				
+				// Execute the draw function in the layer
+				lyr.draw();
+			}
+		</script>
+	</head>
+	<body onLoad="init()">
+		<canvas id="cascade" height="200" width="200" style="border: 1px solid #000"></canvas>
+	</body>
+</html>
