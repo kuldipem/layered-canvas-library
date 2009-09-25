@@ -111,9 +111,33 @@
 		 */
 		init : function (elID, dimension) {
 			this.setEl(elID, dimension);
+			
+			// Attach mouse over events
+			var el = this.getEl();
+			
+			el.onmousemove = this.mouseMove;
+			el.onclick = this.mouseClick;
+			el.ondblclick = this.mouseDoubleClick;
+			el.onmousedown = this.mouseDown;
+			el.onmouseup = this.mouseUp;
+			
 			return this;
 		},
-
+		mouseMove : function (e) {
+			
+		},
+		mouseClick : function (e) {
+			window.console.log('click');
+		},
+		mouseDoubleClick : function (e) {
+			window.console.log('dblclick');
+		},
+		mouseDown : function (e) {
+			window.console.log('down');
+		},
+		mouseUp : function (e) {
+			window.console.log('up');
+		},
 		/**
 		 * Returns the DOM element or false
 		 */		
