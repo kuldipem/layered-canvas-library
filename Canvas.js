@@ -103,7 +103,7 @@
 		 * @var elCtx {Object} The context from the DOM Canvas
 		 */
 		elCtx : null,
-
+		
 		/**
 		 * Constructor of the object. elID can be the id of the canvas element
 		 * or the DOM.
@@ -115,16 +115,17 @@
 			// Attach mouse over events
 			var el = this.getEl();
 			
-			el.onmousemove = this.mouseMove;
-			el.onclick = this.mouseClick;
-			el.ondblclick = this.mouseDoubleClick;
-			el.onmousedown = this.mouseDown;
-			el.onmouseup = this.mouseUp;
+			el.onmousemove = this.fireEvent;
+			el.onclick = this.fireEvent;
+			el.ondblclick = this.fireEvent
+			el.onmousedown = this.fireEvent;
+			el.onmouseup = this.fireEvent;
 			
 			return this;
 		},
 		mouseMove : function (e) {
-			
+			// Pass event to fireevent
+			window.console.log(e);
 		},
 		mouseClick : function (e) {
 			window.console.log('click');
@@ -137,6 +138,11 @@
 		},
 		mouseUp : function (e) {
 			window.console.log('up');
+		},
+		fireEvent : function (event) {
+			for(i in this.ObjectManager.objects) {
+				
+			}
 		},
 		/**
 		 * Returns the DOM element or false
@@ -234,12 +240,111 @@
 		valueOf : function () {
 			return "[Canvas]";
 		},
+		
+		/**
+		 * Alias for ObjectManager
+		 * @see Canvas.ObjectManager
+		 */
+		om : function () {return this.ObjectManager},
+		
+		/**
+		 * Tracks all objects by reference, created with the library
+		 */
+		ObjectManager : {
+			/**
+			 * Array of objects, stores the objectID and type
+			 */
+			objects: [],
+			/**
+			 * Attempts to add an object to the array. If the object exists, it will return false. Otherwise true.
+			 * @param {Object} objectID
+			 * @param {Object} type
+			 */
+			addObject : function (objectID, type) {
+				if(typeof(objectID) == "undefined") {
+					util.debug("ObjectManager::addObject; objectID is not defined");
+					return false;
+				}
+				if(typeof(type) == "undefined") {
+					util.debug("ObjectManager::addObject; type is not defined");
+					return false;
+				}
+				if(this.findObject(objectID, type) === false) {
+					this.objects.push({
+						objectType : type,
+						objectID : objectID
+					});
+					return true;
+				} else {
+					util.debug("ObjectManager::addObject; object already exists");
+					return false;
+				}
+			},
+			/**
+			 * Attempts to remove an object from within the array. Returns true or false
+			 * @param {String} objectID
+			 * @param {String} type
+			 */
+			removeObject : function (objectID, type) {
+				if(typeof(objectID) == "undefined") {
+					util.debug("ObjectManager::removeObject; objectID is not defined");
+					return false;
+				}
+				if(typeof(type) == "undefined") {
+					util.debug("ObjectManager::removeObject; type is not defined");
+					return false;
+				}
+				var obj = this.findObject(objectID, type);
+				if(obj !== false) {
+					var newObjects = this.objects.splice(obj.objectAt, 1);
+					this.objects = newObjects;
+					return true;
+				} else {
+					return false;
+				}
+				
+			},
+			/**
+			 * Attempts to find an object within the object's array. Returns a complex object, or false
+			 * @param {String} objectID
+			 * @param {String} type
+			 */
+			findObject : function (objectID, type) {
+				if(typeof(this.objects) == "undefined") {
+					util.debug("ObjectManager::findObject; objects is undefined");
+					return false;
+				}
+				if(typeof(this.objects) != "undefined" && !(this.objects instanceof Array)) {
+					util.debug("ObjectManager::findObject; objects is not an array");
+					return false;
+				}
+				if(typeof(objectID) == "undefined") {
+					util.debug("ObjectManager::findObject; objectID is not defined");
+					return false;
+				}
+				if(typeof(type) == "undefined") {
+					util.debug("ObjectManager::findObject; type is not defined");
+					return false;
+				}
+				for(i in this.objects) {
+					if(this.objects[i].type == type && this.objects[i].objectID == objectID) {
+						var returnObject = {
+							objectAt : i,
+							objectID : objectID,
+							objectType : objectType
+						};
+						return returnObject;
+					}
+				}
+				return false;
+			}
+		},
 
 		/**
 		 * LayerManager Alias
 		 * @see Canvas.LayerManager
 		 */
-		lm : this.LayerManager,
+		lm : function () { return this.LayerManager; },
 		
 		/**
 		 * Control's and manage's Layers. 
@@ -477,6 +582,9 @@
 						}
 					}
 					
+					// Save object in the ObjectManager
+					this.parent.ObjectManager.addObject(this.id, "Layer");
+					
 					// Returns the combined object
 					return util.combine(this, layer);					
 				},
@@ -684,12 +792,6 @@
 						util.debug("Layer:removeItem; unable to find itemID in items");
 						return false;
 					}
-				},
-				/**
-				 * Returns the object type
-				 */
-				type : function () {
-					return "Layer"
 				}
 			};
 			return defaultLayer.init(layer, lm);
@@ -700,6 +802,7 @@
 		 * @param {Object} layer
 		 */
 		Item : function (obj, layer) {
+			var superParent = this;
 			var defaultItem = {
 				/**
 				 * @var id {String} The identifier string of the object
@@ -729,6 +832,11 @@
 				 * @var layer {Canvas.Layer} The parent layer
 				 */
 				layer: null,
+				
+				/**
+				 * @var superParent {Canvas} The parent canvas obj
+				 */
+				superParent : null,
 				/**
 				 * Constructor for the Item object. It does some error checking
 				 * then returns the combined item. Takes the item json object 
@@ -755,7 +863,12 @@
 					// Save the layer
 					this.layer = layer;
 					
-					// var a = new Canvas('test');var b = new Canvas.Layer({id: "Stff", items:[{draw: function(ctx) {ctx.fillRect(20, 20, 40, 40);};}, { draw: function (ctx) {ctx.fillRect(0, 0, 20, 20);} } ]});
+					// Save the superParent
+					this.superParent = superParent;
+					
+					// Save the object to the object manager
+					this.superParent.ObjectManager.addObject(this.id, "Item");
+					
 					return util.combine(this, item);
 					
 				},
@@ -824,11 +937,11 @@
 					} else
 						return 0;
 				},
-				/**
-				 * Returns the object type
-				 */
-				type : function () {
-					return "Item";
+				onunload : function () {
+					util.debug("unloading");
+				},
+				unload : function () {
+					util.debug("uunnnloading");
 				}
 			};
 			return defaultItem.init(obj, layer);
