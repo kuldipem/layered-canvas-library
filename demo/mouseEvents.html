@@ -1,0 +1,82 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+		<title>Canvas, Mouse Events demo</title>
+		<script type="text/javascript" src="../Canvas-min.js"></script>
+		<script type="text/javascript">
+			var canvas = null;
+			var lyr = null;
+			function init() {
+				canvas = new Canvas('cascade');
+				
+				var items = new Array();
+				var cnt = 0;
+				for(x = 10; x <200; x+=50) {
+					for(y = 10;y<200;y+=50) {
+						// Generate a random color at draw time
+						var red = Math.floor(Math.random()*255);
+						var green = Math.floor(Math.random()*255);
+						var blue = Math.floor(Math.random()*255);
+						var fillStyle = "rgb(" +red+","+green+","+blue+")";
+						
+						items.push(new Canvas.Item({
+							id: "box-"+cnt,
+							x : x,
+							y : y,
+							width: 30,
+							height: 30,
+							fillStyle: fillStyle,
+							draw : function (ctx) {
+								
+								// Set the fillStyle of the rectangle
+								ctx.fillStyle = this.fillStyle;
+								
+								ctx.fillRect(this.x,this.y,this.height,this.width);
+								
+							},
+							on : {
+								// on double click, change the obj color
+								"dblclick" : function (event, type, ctx, item) {
+									var red = Math.floor(Math.random()*255);
+									var green = Math.floor(Math.random()*255);
+									var blue = Math.floor(Math.random()*255);
+									this.fillStyle = "rgb(" +red+","+green+","+blue+")";
+									
+									this.draw(ctx);																	
+								},
+								"mouseover" : function (event, type, ctx, item) {
+									this.draw(ctx);
+									
+									ctx.fillStyle = "rgba(255, 255, 255, .50)";
+									ctx.fillRect(this.x - 5, this.y - 5, this.height +10, this.width+10);
+								},
+								"mouseout" : function (event, type, ctx, item) {
+									
+									ctx.fillStyle = "rgb(255, 255, 255)";
+									ctx.fillRect(this.x - 5, this.y - 5, this.height +10, this.width+10);
+									this.draw(ctx);
+								}
+							}
+						}));
+						cnt++;
+					}
+
+				}
+				
+				
+				// Now that the boxes are defined, create a layer to hold them
+				lyr = new Canvas.Layer({
+					id: "layer",
+					items: items
+				});
+				
+				// Execute the draw function in the layer
+				lyr.draw();
+			}
+		</script>
+	</head>
+	<body onLoad="init()">
+		<canvas id="cascade" height="200" width="200" style="border: 1px solid #000"></canvas>
+	</body>
+</html>
