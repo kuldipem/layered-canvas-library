@@ -59,6 +59,7 @@
 		combine : function (obj1, obj2) {
 			var obj = {};
 			
+			// Iterate through defaults, append and replace those it has
 			for(i in obj1) {
 				if(typeof(obj2[i]) != "undefined") {
 					obj[i] = obj2[i];
@@ -66,9 +67,15 @@
 					obj[i] = obj1[i];
 				}
 			}
+			// Iterate through passed objs, append them to the final object
+			for(i in obj2) {
+				if(typeof(obj[i]) == "undefined") {
+					obj[i] = obj2[i];
+				}
+			}
 			
 			return obj;
-		} ,
+		},
 		// debugging (firebug) //
 		/**
 		 * Echo's a message to window.console (firebug)
@@ -81,6 +88,39 @@
 			}
 			else {
 				return false;
+			}
+		},
+		/**
+		 * http://www.quirksmode.org/js/findpos.html
+		 * @param {DOM} obj
+		 */
+		findPos : function (obj) {
+			var curLeft = curTop = 0;
+			if(obj.offsetParent) {
+				do {
+					curLeft += obj.offsetLeft;
+					curTop += obj.offsetTop;
+				} while (obj = obj.offsetParent);	
+			}
+			return [curLeft, curTop];
+		},
+		/**
+		 * Determines if the mouseX and Y are over the obj
+		 * @param {Int} mouseX
+		 * @param {Int} mouseY
+		 * @param {Object} obj
+		 */
+		isOverObj : function (mouseX, mouseY, obj) {
+			// If the object can be tracked..
+			if(typeof(obj.width) == "undefined" || typeof(obj.height) == "undefined" ||
+				typeof(obj.x) == "undefined" || typeof(obj.y) == "undefined" ) {
+				return false;
+			}						
+			// If the mouse is within the object's dimensions, then return true
+			if(mouseX >= obj.x && mouseX <= (obj.x + obj.width)) {
+				if(mouseY >= obj.y && mouseY <= (obj.y + obj.height)) {
+					return true;
+				}
 			}
 		}
 
@@ -105,6 +145,16 @@
 		elCtx : null,
 		
 		/**
+		 * @var x {Int} The current X position of the Canvas
+		 */
+		x : 0,
+		
+		/**
+		 * @var y {Int} The current Y position of the Canvas
+		 */
+		y : 0,
+		
+		/**
 		 * Constructor of the object. elID can be the id of the canvas element
 		 * or the DOM.
 		 * @param {Object} elID
@@ -121,37 +171,97 @@
 			el.onmousedown = this.fireEvent;
 			el.onmouseup = this.fireEvent;
 			
+			// Find the position of the Canvas element
+			var position = util.findPos(el);
+			this.x = position[0];
+			this.y = position[1];
+			
 			return this;
 		},
-		mouseMove : function (e) {
-			// Pass event to fireevent
-			window.console.log(e);
-		},
-		mouseClick : function (e) {
-			window.console.log('click');
-		},
-		mouseDoubleClick : function (e) {
-			window.console.log('dblclick');
-		},
-		mouseDown : function (e) {
-			window.console.log('down');
-		},
-		mouseUp : function (e) {
-			window.console.log('up');
-		},
 		fireEvent : function (event) {
-			for(i in this.ObjectManager.objects) {
-				
+			var canvas = Canvas.fn;
+			var type = "N/A";
+			if(typeof(event.type) != "undefined") {
+				type = event.type;
 			}
+			if(typeof(canvas) == "undefined") {
+				util.debug("Canvas::fireEvent; Can't find canvas");
+				return false;
+			}
+			// Adjust mouseX and Y with the current X and Y of the canvas.
+			// This will give us a closer approximation of the x and y of 
+			// the mouse, over the canvas
+			var mouseX = parseInt(event.clientX) - parseInt(canvas.x);
+			var mouseY = parseInt(event.clientY) - parseInt(canvas.y);
+			event.mouseX = mouseX;
+			event.mouseY = mouseY;
+			
+			// This is a buffer for mouse events. Since each mouse event
+			// should be a singular event. So, if this buffer has more then one
+			// element, it should only fire the last element.
+			var mouseEventsToFire = new Array();
+			
+			// mouse events to catch
+			var mouseEvents = new Array("click", "dblclick", "mousemove", "mouseover", "mousedown", "mouseup");
+			
+			for(i in canvas.ObjectManager.objects) {
+				var obj = canvas.ObjectManager.objects[i].object;
+				
+				// Determine if it's a mouse move event, if so determine if
+				// we move over the obj. If so, fire the mouseover event.
+				// If we are moving off of the obj, then fire the mouseoff event
+				
+				if(util.isOverObj(mouseX, mouseY, obj) && type == "mousemove" && typeof(obj._mouseover) == "undefined") {
+					obj._mouseover = true;
+					if (obj.hasEvent("mouseover")) {
+						//obj.fireEvent("mouseover", event, obj);
+						obj.fireEvent(event, "mouseover", canvas.getCtx(), obj);
+					}
+				}
+				else if (!util.isOverObj(mouseX, mouseY, obj) && type == "mousemove" && typeof(obj._mouseover) == "boolean") {
+					delete(obj._mouseover);
+					if (obj.hasEvent("mouseout")) {
+						//obj.fireEvent("mouseout", event, obj);
+						obj.fireEvent(event, "mouseout", canvas.getCtx(), obj);
+					}
+				}
+				// If over the obj, and mousedown on the obj
+				if(util.isOverObj(mouseX, mouseY, obj) && type == "mousedown" && typeof(obj._isDraggable) == "undefined") {
+					obj._isDraggable = true;
+					obj.canDrag = true;
+				} else if (!util.isOverObj(mouseX, mouseY, obj) && type == "mouseup" && typeof(obj._isDraggable) == "boolean") {
+					delete(obj._isDraggable);
+					obj.canDrag = false;
+				}
+				
+				if(obj.hasEvent(type)) {
+					// On mouse events, calculate the position of the mouse 
+					// in relation to the canvas, and the position of the mouse
+					// in relation to each object drawn					
+					if(mouseEvents.toString().search(type) !== -1) {
+						if (util.isOverObj(mouseX, mouseY, obj)) {
+							obj.fireEvent(event, type, canvas.getCtx(), obj);
+							//obj.fireEvent(type, event, obj);
+						}
+					// Keyboard events	
+					} else {	
+						//obj.fireEvent(type, event, obj);
+						obj.fireEvent(event, type, canvas.getCtx(), obj);
+					}
+				}
+			}
+			return true;
 		},
 		/**
 		 * Returns the DOM element or false
 		 */		
 		getEl : function () {
-			if(this.el != null && typeof(this.el) != "undefined")
+			if (this.el != null && typeof(this.el) != "undefined") {
 				return this.el;
-			else
+			}
+			else {
 				return false;
+			}
 		},
 		
 		/**
@@ -219,8 +329,9 @@
 		 * @param {String} dimension
 		 */		
 		getCtx : function (dimension) {
-			if (typeof(this.elCtx) != "undefined" && this.elCtx != null) 
+			if (typeof(this.elCtx) != "undefined" && this.elCtx != null) {
 				return this.elCtx;
+			}
 			else {
 				return this.setCtx(dimension, true);
 			}
@@ -257,10 +368,11 @@
 			objects: [],
 			/**
 			 * Attempts to add an object to the array. If the object exists, it will return false. Otherwise true.
-			 * @param {Object} objectID
-			 * @param {Object} type
+			 * @param {String} objectID
+			 * @param {String} type
+			 * @param {Object} object
 			 */
-			addObject : function (objectID, type) {
+			addObject : function (objectID, type, object) {
 				if(typeof(objectID) == "undefined") {
 					util.debug("ObjectManager::addObject; objectID is not defined");
 					return false;
@@ -269,10 +381,15 @@
 					util.debug("ObjectManager::addObject; type is not defined");
 					return false;
 				}
+				if(typeof(object) == "undefined") {
+					util.debug("ObjectManager::addObject; object is not defined");
+					return false;
+				}
 				if(this.findObject(objectID, type) === false) {
 					this.objects.push({
 						objectType : type,
-						objectID : objectID
+						objectID : objectID,
+						object : object
 					});
 					return true;
 				} else {
@@ -331,7 +448,8 @@
 						var returnObject = {
 							objectAt : i,
 							objectID : objectID,
-							objectType : objectType
+							objectType : objectType,
+							object : i.object
 						};
 						return returnObject;
 					}
@@ -497,10 +615,12 @@
 					util.debug("LayerManager::moveLayerTo; position is undefined");
 					return false;
 				}
-				if(position < 0)
+				if (position < 0) {
 					position = 0;
-				if(position > (this.getCount() - 1))
+				}
+				if (position > (this.getCount() - 1)) {
 					position = (this.getCount() - 1);
+				}
 				
 				var layerPosition = this.findLayer(layerID);
 				
@@ -516,10 +636,12 @@
 				layer = layer[0];					
 				
 				for(var i = 0;i <= (this.getCount());i++) {
-					if(i != position) {
+					if (i != position) {
 						newlayers.push(oldlayers[i]);
-					} else
+					}
+					else {
 						newlayers.push(layer);
+					}
 				}
 				this.layers = newlayers;
 				return true;	
@@ -582,11 +704,21 @@
 						}
 					}
 					
+					// Combine the object's default values with the passed values
+					var combinedLayer = util.combine(this, layer); 
+					
 					// Save object in the ObjectManager
-					this.parent.ObjectManager.addObject(this.id, "Layer");
+					this.parent.ObjectManager.addObject(combinedLayer.id, "Layer", combinedLayer);
 					
 					// Returns the combined object
-					return util.combine(this, layer);					
+					return combinedLayer;
+				},
+				on : {
+					// mousemove
+					// mouseover
+					// mouseoff
+					// click
+					// dblclick
 				},
 				/**
 				 * Top level draw function. Excutes the draw functions of all items
@@ -681,10 +813,12 @@
 						util.debug("Layer::getItemAt; position is undefined");
 						return false;
 					}
-					if(typeof(this.items[position]) != "undefined")
+					if (typeof(this.items[position]) != "undefined") {
 						return this.items[position];
-					else
+					}
+					else {
 						return false;
+					}
 				},
 				/**
 				 * Find's the item with the ID, itemID
@@ -748,10 +882,12 @@
 						util.debug("Layer::moveItem; position is undefined");
 						return false;
 					}
-					if(position < 0)
+					if (position < 0) {
 						position = 0;
-					if(position > (this.getCount() - 1))
+					}
+					if (position > (this.getCount() - 1)) {
 						position = (this.getCount() - 1);
+					}
 					
 					var itemPosition = this.findItem(itemID);
 					
@@ -767,10 +903,12 @@
 					item = item[0];					
 					
 					for(var i = 0;i <= (this.getCount());i++) {
-						if(i != position) {
+						if (i != position) {
 							newItems.push(oldItems[i]);
-						} else
+						}
+						else {
 							newItems.push(item);
+						}
 					}
 					this.items = newItems;
 					return true;
@@ -792,7 +930,73 @@
 						util.debug("Layer:removeItem; unable to find itemID in items");
 						return false;
 					}
-				}
+				},
+				/**
+				 * Determines if the event 'type' has been defined, and if it
+				 * is a function. If both are true it returns true, false
+				 * otherwise
+				 * @param {String} type
+				 * @return {Bool}
+				 */
+				hasEvent : function (type) {
+					if(typeof(type) == "undefined") {
+						util.debug("Layer::hasEvent; type is not defined");
+						return false;
+					}
+					if(typeof(this.on) != "undefined") {
+						for(i in this.on) {
+							if(i == type && typeof(this.on[i]) == "function") {
+								return true;
+							}
+						}
+					} else {
+						return false;
+					}
+					return false;
+				},
+				/**
+				 * Searches for and returns the event defined at 'type'.
+				 * @param {String} type
+				 * @return {Object}
+				 */
+				getEvent : function (type) {
+					if(typeof(type) == "undefined") {
+						util.debug("Layer::getEvent; type is not defined");
+						return false;
+					}
+					if(this.hasEvent(type)) {
+						for(i in this.on) {
+							if(i == type) {
+								return this.on[i];
+							}
+						}
+					} else {
+						return false;
+					}
+					return false;
+
+				},
+				/**
+				 * Triggers the event defined at 'type' with the event that
+				 * is being passed.
+				 * @param {String} type
+				 * @param {Object} event
+				 * @return {Object}
+				 */
+				fireEvent : function (event, type, ctx, obj) {
+					if(typeof(type) == "undefined") {
+						util.debug("Layer::fireEvent; type is not defined");
+						return false;
+					}
+					if(this.hasEvent(type)) {
+						var evt = this.getEvent(type);
+						return evt.call(this, event, type, ctx, obj);
+						//return evt(type, event, this);
+					} else {
+						return false;
+					}
+					return false;
+				} 
 			};
 			return defaultLayer.init(layer, lm);
 		},
@@ -828,6 +1032,10 @@
 				 * @var width {Int} The width of the object
 				 */
 				width : 0,
+				/**
+				 * @var canDrag {Bool} If you can drag the object
+				 */
+				canDrag : false,
 				/**
 				 * @var layer {Canvas.Layer} The parent layer
 				 */
@@ -866,10 +1074,13 @@
 					// Save the superParent
 					this.superParent = superParent;
 					
-					// Save the object to the object manager
-					this.superParent.ObjectManager.addObject(this.id, "Item");
+					// Comine the item's default values with the passe values
+					var combinedItem = util.combine(this, item);
 					
-					return util.combine(this, item);
+					// Save the object to the object manager
+					this.superParent.ObjectManager.addObject(combinedItem.id, "Item", combinedItem);
+					
+					return combinedItem;
 					
 				},
 				/**
@@ -914,35 +1125,101 @@
 				 * Returns the x position of item
 				 */
 				getX : function () {
-					if(typeof(this.x) == "number") {
+					if (typeof(this.x) == "number") {
 						return parseInt(this.x);
-					} else
+					}
+					else {
 						return 0;
+					}
 				},
 				/**
 				 * Returns the y position of the item
 				 */
 				getY : function () {
-					if(typeof(this.y) == "number") {
+					if (typeof(this.y) == "number") {
 						return parseInt(this.y);
-					} else 
+					}
+					else {
 						return 0;
+					}
 				},
 				/**
 				 * Returns the Z position of the item
 				 */
 				getZ : function () {
-					if(typeof(this.z) == "number") {
+					if (typeof(this.z) == "number") {
 						return parseInt(this.z);
-					} else
+					}
+					else {
 						return 0;
+					}
 				},
-				onunload : function () {
-					util.debug("unloading");
+				/**
+				 * Determines if the event 'type' has been defined, and if it
+				 * is a function. If both are true it returns true, false
+				 * otherwise
+				 * @param {String} type
+				 * @return {Bool}
+				 */
+				hasEvent : function (type) {
+					if(typeof(type) == "undefined") {
+						util.debug("Item::hasEvent; type is not defined");
+						return false;
+					}
+					if(typeof(this.on) != "undefined") {
+						for(i in this.on) {
+							if(i == type && typeof(this.on[i]) == "function") {
+								return true;
+							}
+						}
+					} else {
+						return false;
+					}
+					return false;
 				},
-				unload : function () {
-					util.debug("uunnnloading");
-				}
+				/**
+				 * Searches for and returns the event defined at 'type'.
+				 * @param {String} type
+				 * @return {Object}
+				 */
+				getEvent : function (type) {
+					if(typeof(type) == "undefined") {
+						util.debug("Item::getEvent; type is not defined");
+						return false;
+					}
+					if(this.hasEvent(type)) {
+						for(i in this.on) {
+							if(i == type) {
+								return this.on[i];
+							}
+						}
+					} else {
+						return false;
+					}
+					return false;
+
+				},
+				/**
+				 * Triggers the event defined at 'type' with the event that
+				 * is being passed.
+				 * @param {String} type
+				 * @param {Object} event
+				 * @return {Object}
+				 */
+				fireEvent : function (event, type, ctx, obj) {
+					if(typeof(type) == "undefined") {
+						util.debug("Item::fireEvent; type is not defined");
+						return false;
+					}
+					if(this.hasEvent(type)) {
+						var evt = this.getEvent(type);
+						//return evt.call(this, type, event, this);
+						return evt.call(this, event, type, ctx, obj);
+					} else {
+						return false;
+					}
+					return false;
+				} 
 			};
 			return defaultItem.init(obj, layer);
 		}
