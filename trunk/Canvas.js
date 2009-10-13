@@ -172,7 +172,7 @@
 				// we move over the obj. If so, fire the mouseover event.
 				// If we are moving off of the obj, then fire the mouseoff event
 				
-				if(util.isOverObj(mouseX, mouseY, obj) && type == "mousemove" && typeof(obj._mouseover) == "undefined") {
+				if(Canvas.util.isOverObj(mouseX, mouseY, obj) && type == "mousemove" && typeof(obj._mouseover) == "undefined") {
 					obj._mouseover = true;
 					if (obj.hasEvent("mouseover")) {
 						obj.fireEvent(event, "mouseover", canvas.getCtx(), obj);
@@ -1158,6 +1158,6 @@
 				return "[Canvas.Item]";
 			}
 		};
-		return defaultItem.init(obj, layer);
+		return defaultItem.init(item, layer);
 	};
 })();
