@@ -3,12 +3,12 @@
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 		<title>Canvas, Cascade Demo</title>
-		<script type="text/javascript" src="../Canvas.js"></script>
+		<script type="text/javascript" src="../Canvas-min.js"></script>
 		<script type="text/javascript">
 			var canvas = null;
 			var lyr = null;
 			function init() {
-				canvas = new Canvas('cascade');
+				Canvas.setEl("cascade", "2d");
 				
 				var newItems = new Array();
 				

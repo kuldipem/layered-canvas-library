@@ -5,10 +5,10 @@
 		<title>Canvas, Mouse Events demo</title>
 		<script type="text/javascript" src="../Canvas-min.js"></script>
 		<script type="text/javascript">
-			var canvas = null;
 			var lyr = null;
 			function init() {
-				canvas = new Canvas('cascade');
+				
+				Canvas.setEl("mouseEvents", "2d");
 				
 				var items = new Array();
 				var cnt = 0;
@@ -77,6 +77,6 @@
 		</script>
 	</head>
 	<body onLoad="init()">
-		<canvas id="cascade" height="200" width="200" style="border: 1px solid #000"></canvas>
+		<canvas id="mouseEvents" height="200" width="200" style="border: 1px solid #000"></canvas>
 	</body>
 </html>
