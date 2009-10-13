@@ -427,7 +427,7 @@
 		draw : function (ctx) {
 			// If ctx is undefined, then grab the context from the parent
 			if(typeof(ctx) == "undefined") {
-				ctx = this.getCtx();
+				ctx = Canvas.getCtx();
 			}
 			// If ctx is still undefined, then throw an error
 			if(typeof(ctx) == "undefined") {
@@ -495,8 +495,12 @@
 		/**
 		 * Adds a new Layer to the Layer Manager
 		 * @param {Canvas.Layer} layer
+		 * @param {Bool} isLayer
 		 */
-		addLayer : function (layer) {
+		addLayer : function (layer, isLayer) {
+			if (typeof(isLayer) == "undefined") {
+				isLayer = false;
+			}
 			if(typeof(layer) == "undefined") {
 				Canvas.util.debug("LayerManager::addLayer; layer is undefined");
 				return false;
@@ -508,7 +512,11 @@
 				}
 			}
 			else {
-				this.layers.push(new Canvas.Layer(layer, this));
+				if (!isLayer) {
+					this.layers.push(new Canvas.Layer(layer, this));
+				} else {
+					this.layers.push(layer);
+				}
 			}
 		},
 		/**
@@ -651,6 +659,9 @@
 				
 				// Save object in the ObjectManager
 				this.parent.ObjectManager.addObject(combinedLayer.id, "Layer", combinedLayer);
+				
+				// Save the layer to the layer manager
+				this.parent.LayerManager.addLayer(combinedLayer, true);
 				
 				// Returns the combined object
 				return combinedLayer;
