@@ -86,11 +86,18 @@
 			}
 			
 			// Now that we have the object, attach some event listeners to it
+			
+			// Mouse Events
 			this.el.onmousemove = this.fireEvent;
 			this.el.onclick = this.fireEvent;
 			this.el.ondblclick = this.fireEvent
 			this.el.onmousedown = this.fireEvent;
 			this.el.onmouseup = this.fireEvent;
+			
+			// Keyboard Events are attached at the window
+			window.onkeydown = this.fireEvent;
+			window.onkeyup = this.fireEvent;
+			window.onkeypress = this.fireEvent;
 			
 			// Find the position of the Canvas element
 			var position = Canvas.util.findPos(this.el);
