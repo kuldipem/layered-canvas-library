@@ -11,7 +11,7 @@
 		/**
 		 * @var version {Float} Stores the current version
 		 */
-		version : 1.5,
+		version : 1.2,
 		/**
 		 * @var author {String} Stores the library author
 		 */
@@ -140,6 +140,7 @@
 			else {
 				return this.setCtx(dimension, true);
 			}
+			return false;
 		},
 		/**
 		 * Handles events that have been fired. This also triggers events
@@ -215,7 +216,19 @@
 				}
 			}
 			return true;
-		},		
+		},	
+		/**
+		 * Fills the canvas with a clear rectangle
+		 */	
+		clear : function () {
+			if(this.getCtx() !== false) {
+				var cvs = this.getEl();
+				this.getCtx().clearRect(0, 0, parseInt(cvs.width), parseInt(cvs.height));
+				return true;
+			} else {
+				return false;
+			}
+		},
 		// Native, req functions //
 		/**
 		 * Returns the name of the Obj
@@ -343,7 +356,6 @@
 				});
 				return true;
 			} else {
-				Canvas.util.debug("ObjectManager::addObject; object already exists");
 				return false;
 			}
 		},
@@ -361,10 +373,11 @@
 				Canvas.util.debug("ObjectManager::removeObject; type is not defined");
 				return false;
 			}
+			
 			var obj = this.findObject(objectID, type);
+			
 			if(obj !== false) {
-				var newObjects = this.objects.splice(obj.objectAt, 1);
-				this.objects = newObjects;
+				this.objects.splice(obj.objectAt, 1);
 				return true;
 			} else {
 				return false;
@@ -393,12 +406,13 @@
 				Canvas.util.debug("ObjectManager::findObject; type is not defined");
 				return false;
 			}
+			
 			for(i in this.objects) {
-				if(this.objects[i].type == type && this.objects[i].objectID == objectID) {
+				if(this.objects[i].objectType == type && this.objects[i].objectID == objectID) {
 					var returnObject = {
 						objectAt : i,
-						objectID : objectID,
-						objectType : objectType,
+						objectID : i.objectID,
+						objectType : i.objectType,
 						object : i.object
 					};
 					return returnObject;
@@ -474,8 +488,69 @@
 				if(layer.getID() == layerID) {
 					return layer;
 				}
+			}
+			return false;
+		},
+		/**
+		 * Finds an item by it's itemID. Can also specify layerID
+		 * @param {String} itemID
+		 * @param {String} layerID[optional]
+		 */
+		findItem : function(itemID, layerID) {
+			if(typeof(itemID) == "undefined") {
+				Canvas.util.debug("LayerManager::findItem; itemID is not defined");
 				return false;
 			}
+			if(typeof(this.layers) == "undefined" || !(this.layers instanceof Array)) {
+				Canvas.util.debug("LayerManager::findItem; no layers defined");
+				return false;
+			}
+			if(typeof(layerID) != "undefined") {
+				var layer = this.findLayer(layerID);
+				if(layer === false) {
+					Canvas.util.debug("LayerManager::findItem; layer not found");
+					return false;
+				} else {
+					var item = layer.getItem(itemID);
+					if(item === false) {
+						Canvas.util.debug("LayerManager::findItem; item not found");
+						return false;
+					} else {
+						return item;
+					}
+				}
+			} else {
+				for(i in this.layers) {
+					var layer = this.getLayerAt(i);
+					var item = layer.getItem(itemID);
+					if(item !== false) {
+						return item;
+					}
+				}
+				Canvas.util.debug("LayerManager::findItem; item not found");
+				return false;
+			}
+		},
+		/**
+		 * Finds a Layer's position by it's ID
+		 * @param {String} layerID
+		 */
+		findLayerPosition : function (layerID) {
+			if(typeof(layerID) == "undefined") {
+				Canvas.util.debug("LayerManager::findLayerPosition; layerID is undefined");
+				return false;
+			}
+			if(typeof(this.layers) == "undefined" || !(this.layers instanceof Array)) {
+				Canvas.util.debug("LayerManager::findLayerPosition; no layers defined");
+				return false;
+			}
+			for(i in this.layers) {
+				var layer = this.getLayerAt(i);
+				if(layer.getID() == layerID) {
+					return i;
+				}
+			}
+			return false;
 		},
 		/**
 		 * Returns the layer at position
@@ -595,6 +670,44 @@
 			}
 			this.layers = newlayers;
 			return true;	
+		},
+		/**
+		 * Finds a layer by it's layerID then removes it
+		 * @param {String} layerID
+		 */
+		removeLayer : function (layerID) {
+			if(typeof(layerID) == "undefined") {
+				Canvas.util.debug("LayerManager::removeLayer; layerID is not defined");
+				return false;
+			}
+			if(typeof(this.layers) == "undefined" || !(this.layers instanceof Array)) {
+				Canvas.util.debug("LayerManager::removeLayer; no layers defined");
+				return false;
+			}
+			var position = this.findLayerPosition(layerID);
+			
+			if(position !== false) {
+				if(this.getLayerAt(position) !== false) {
+					var lyr = this.getLayerAt(position);
+					// Remove the items from the layer
+					lyr.removeAllItems();
+				}
+				// Delete it
+				this.layers.splice(position, 1);
+
+				// Also drop the layer from the object manager
+				Canvas.ObjectManager.removeObject(layerID, "Layer");
+				return true;
+			}
+			return false;
+		},
+		toString : function () {
+			var out = "[";
+			for(i in this.layers) {
+				out += this.layers[i].getID() + ",";
+			}
+			out += "]";
+			Canvas.util.debug(out);
 		}
 	};
 	
@@ -755,7 +868,12 @@
 					Canvas.util.debug("Layer::getItem; itemID is undefined");
 					return false;
 				}
-				return this.items[this.findItem(itemID)];
+				var item = this.findItem(itemID);
+				if(typeof(item) == "undefined") {
+					Canvas.util.debug("Layer::getItem; item not found");
+					return false;
+				}
+				return this.getItemAt(item);
 			},
 			/**
 			 * Get's the item at position
@@ -878,11 +996,29 @@
 				var itemPosition = false;
 				if((itemPosition = this.findItem(itemID)) !== false) {
 					this.items.splice(itemPosition, 1);
+					
+					// Remove it from the object manager
+					Canvas.ObjectManager.removeObject(itemID, "Item");
 					return true;
 				} else {
 					Canvas.util.debug("Layer:removeItem; unable to find itemID in items");
 					return false;
 				}
+			},
+			/**
+			 * Removes all items from thje layer at once
+			 */
+			removeAllItems : function () {
+				if(!(this.items instanceof Array) || this.items.length == 0) {
+					Canvas.util.debug("Layer::removeAllItems; No items to remove");
+					return false;
+				}
+				for(i in this.items) {
+					var item = this.getItemAt(i);
+					Canvas.ObjectManager.removeObject(item.getID(), "Item");
+				}
+				this.items = [];
+				return true;
 			},
 			/**
 			 * Determines if the event 'type' has been defined, and if it
@@ -1178,4 +1314,199 @@
 		};
 		return defaultItem.init(item, layer);
 	};
+	Canvas.ThreadManager = Canvas.prototype = {
+		/**
+		 * @var {Array} threads The threads that it manages
+		 */
+		threads : [],
+		
+		/**
+		 * Returns the thread at the position specified
+		 * @param {Integer} position
+		 */
+		getThreadAt : function(position) {
+			if(typeof(position) == "undefined") {
+				Canvas.util.debug("ThreadManager::getThreadAt; position is not defined");
+				return false;
+			}
+			if(typeof(this.threads[position]) == "undefined") {
+				Canvas.util.debug("ThreadManager::getThreadAt; no thread found at that position");
+				return false;
+			}
+			if (typeof(this.threads) == "object" && (this.threads instanceof Array)) {
+				return this.threads[position];
+			}
+			return false;
+		},
+		/**
+		 * Attempts to find a thread by it's threadID, if it does the thread is returned
+		 * @param {String} threadID
+		 */
+		findThread : function(threadID) {
+			if(typeof(threadID) == "undefined") {
+				Canvas.util.debug("ThreadManager::findThread; threadID is not defined");
+				return false;
+			}
+			if(this.threads.length < 1)
+				return false;
+			if(typeof(this.threads) == "object" && (this.threads instanceof Array)) {
+				for(i in this.threads) {
+					if(this.getThreadAt(i) !== false && this.getThreadAt(i).getID() == threadID) {
+						return {
+							position: i,
+							obj: this.threads[i]
+						};
+					}
+				}
+			}
+			return false;
+		},
+		/**
+		 * Adds a new thread to the list of threads
+		 * @param {Object} thread
+		 */
+		addThread : function(thread, isThread) {
+			if(typeof(isThread) == "undefined") {
+				isThread = false;
+			}
+			if(typeof(thread) == "undefined") {
+				Canvas.util.debug("ThreadManager::addThread; thread is not defined");
+				return false;
+			}
+			if (typeof(this.threads) == "undefined" || !(this.threads instanceof Array)) {
+				this.threads = new Array();
+			}
+			if(typeof(thread.id) != "undefined") {
+				if(this.findThread(thread.id) !== false) {
+					return false;
+				}
+			}
+			if (isThread) {
+				this.threads.push(thread);
+			}
+			else {
+				this.threads.push(new Canvas.Thread(thread));
+			}
+			return true;
+		},
+		/**
+		 * Removes a thread from the list of threads
+		 * @param {String} threadID
+		 * @param {Bool} cleared
+		 */
+		removeThread : function(threadID, cleared) {
+			if (typeof(cleared) == "undefined") {
+				cleared = false;
+			}
+			if(typeof(threadID) == "undefined") {
+				Canvas.util.debug("ThreadManager::removeThread; threadID is not defined");
+				return false;
+			}
+			var thread = this.findThread(threadID);
+			if (!cleared) {
+				thread.objs.clearThread();
+			}
+			this.threads.splice(thread.position, 1);
+			return true;
+		},
+		/**
+		 * Returns the amount of threads it's monitoring
+		 */
+		getCount : function () {
+			if(typeof(this.threads) == "undefined") {
+				return 0;
+			}
+			if(typeof(this.threads) != "undefined" && !(this.threads instanceof Array)) {
+				return 0;
+			}
+			return this.threads.length;
+		},
+		test : function () {
+			window.console.log('test');
+		}
+	};
+	Canvas.Thread = Canvas.prototype = function(thread) {
+		defaultThread = {
+			id : "thread_",
+			expires : -1,
+			interval : 500,
+			timer : null,
+			init : function (thread) {
+				if(typeof(thread) == "undefined" || typeof(thread) != "object") {
+					Canvas.util.debug("Thread::init; thread is not defined, or not an object");
+					return false;
+				}
+
+				var combinedThread = Canvas.util.combine(defaultThread, thread);
+
+ 				combinedThread.id = thread.id || defaultThread.id + "_" + Canvas.ThreadManager.getCount();
+				while(Canvas.ThreadManager.findThread(combinedThread.getID()) !== false) {
+					combinedThread.id += "_";
+				}
+				
+				// Add the thread to the thread manager
+				Canvas.ThreadManager.addThread(combinedThread, true);
+
+				if(typeof(combinedThread.expires) == "undefined") {
+					combinedThread.exec();
+					return true;
+				} else {
+					if(combinedThread.expires == 0) {
+						Canvas.util.debug("Thread::init; thread must have at least one interval");
+						return false;
+					} else {
+						combinedThread.timer = setInterval('Canvas.ThreadManager.findThread("'+combinedThread.id+'").obj.tick()', combinedThread.interval);
+					}
+				}				
+				return combinedThread;
+			},
+			getID : function () {
+				return this.id;
+			},
+			/**
+			 * The function to execute on interval
+			 */
+			exec : function () {
+				
+			},
+			fireEvent : function (type) {
+				if(typeof(type) == "undefined") {
+					Canvas.util.debug("Thread::type; is not defined");
+					return false;
+				} else {
+					if(typeof(this.on[type]) != "undefined") {
+						return this.on[type].call(this);
+					}
+				}
+				return true;
+			},
+			on : {
+				// beforeexpire
+				// expire
+			},
+			tick : function () {
+				if (this.expires != -1) {
+					this.expires -= 1;
+				}
+				if(this.expires == 0) {
+					if (this.fireEvent("beforeexpire") !== false) {
+						this.clearThread();
+					} else {
+						this.expires++;
+					}
+				}
+				this.exec.call(this, this.expires);
+				
+				if(this.expires == 0) {
+					this.fireEvent("expire");
+				}
+				return true;
+			},
+			clearThread : function () {
+				clearInterval(this.timer);
+				Canvas.ThreadManager.removeThread(this.getID(), true);
+			}
+		};
+		return defaultThread.init(thread);
+	}
 })();
