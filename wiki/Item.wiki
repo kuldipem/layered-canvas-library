@@ -78,6 +78,6 @@ _Public_ *getEvent(String type)* Searches for and returns the event defined at '
 
 _Private_ *fireEvent(DOMEvent event, String type, DOMCanvasContext ctx, Item obj)* Private method invoked by the ObjectManager singleton class when the event is fired from the window.
 
-_Private_ *toString()* Returns "[Canvas.Item]" for the window.
+_Private_ *toString()* Returns "`[Canvas.Item]`" for the window.
 
-_Private_ *valueOf()* Returns "[Canvas.Item]" for the window.
+_Private_ *valueOf()* Returns "`[Canvas.Item]`" for the window.
