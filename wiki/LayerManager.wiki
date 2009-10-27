@@ -38,3 +38,28 @@ _Private_ *moveLayerTo(String layerID, Integer position)* Finds a Layer by the s
 _Private_ *removeLayer(String layerID)* Finds a Layer by the string identifier layerID, and removes it. Note: this will also remove the Layers Items.
 
 _Private_ *toString()* Returns a list of all the Layers the LayerManager is managing.
+
+= Example =
+{{{
+// Create a couple of layers
+var rocks = new Canvas.Layer({
+   id : "rocks",
+   items : []
+});
+
+var trees = new Canvas.Layer({
+   id : "trees",
+   items : []
+});
+
+// Draw out only the rocks layer
+Cavas.LayerManager.findLayer("rocks").draw(Canvas.getCtx());
+
+// Draw out only the trees layer
+Canvas.LayerManager.findLayer("trees").draw(Canvas.getCtx());
+
+// Draw out both layers. The order it will draw out, is the same as the order it was
+// created. Unless you promote, demote or move some layers around.
+
+Canvas.LayerManager.draw();
+}}}
