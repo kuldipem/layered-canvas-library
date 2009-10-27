@@ -2,7 +2,7 @@
 
 = Introduction =
 
-[wiki: Item]
+[http://code.google.com/p/layered-canvas-library/wiki/Item Item]
 
 Add your content here.
 
