@@ -81,3 +81,39 @@ _Private_ *fireEvent(DOMEvent event, String type, DOMCanvasContext ctx, Item obj
 _Private_ *toString()* Returns "`[Canvas.Item]`" for the window.
 
 _Private_ *valueOf()* Returns "`[Canvas.Item]`" for the window.
+
+= Example =
+
+{{{
+var block = new Canvas.Item({
+   id : "block",
+   x : 15,
+   y : 15,
+   width : 50,
+   height : 50,
+   // Store a custom variable for the color
+   fillStyle : "rgb(0, 255, 0)",
+   draw : function (ctx) {
+      // If the item isn't drawn from the Layer, or LayerManager we have to
+      // define our own context.
+      if(typeof(ctx) == "undefined") {
+         ctx = Canvas.getCtx();
+      }
+      // Set the fill style to our current fill style
+      ctx.fillStyle = this.fillStyle;
+
+      // Fill a rectangle using our x, y, width, and height properties.
+      ctx.fillRect(this.x, this.y, this.width, this.height);
+   },
+   on : {
+      // on mouseover, change the object's color and redraw
+      "mouseover" : function (event, type, ctx, item) {
+         item.fillStyle = "rgb(255, 0, 0)";
+         item.draw(ctx);
+      }
+   }
+});
+
+item.draw(Canvas.getCtx());
+
+}}}
