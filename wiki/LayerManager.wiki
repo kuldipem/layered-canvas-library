@@ -25,11 +25,11 @@ _Private_ *addLayer(Object layer, Bool isLayer `[optional]`)* Adds a Layer to to
 
 _Private_ *promoteLayer(String layerID)* Finds a Layer by the string identifier layerID, then adjusts it's order so that it is drawn after other Layers. Here is an example;
 
-layers : [layera, layerb, layerc];
+layers : `[layera, layerb, layerc]`;
 
 promote(layera);
 
-layers : [layerb, layera, layerc];
+layers : `[layerb, layera, layerc]`;
 
 _Private_ *demoteLayer(String layerID)* Finds a Layer by the string identifier layerID, then adjusts it's order so that it is drawn before other Layers. See promoteLayer as an example... except reverse.
 
