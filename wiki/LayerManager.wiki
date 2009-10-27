@@ -15,13 +15,13 @@ _Private_ *draw(DOMCanvasContext ctx)* This method fires the draw function of ea
 
 _Private_ *findLayer(String layerID)* Finds a Layer by the string identifier layerID, then returns it.
 
-_Private_ *findItem(String itemID, String layerID [optional])* Finds an Item by the string identifier itemID, and returns it.
+_Private_ *findItem(String itemID, String layerID `[optional]`)* Finds an Item by the string identifier itemID, and returns it.
 
 _Private_ *findLayerPosition(String layerID)* Finds a Layer by the string identifier layerID, then returns it's position.
 
 _Private_ *getLayerAt(Integer position)* Finds a Layer by at it's position and returns it.
 
-_Private_ *addLayer(Object layer, Bool isLayer [optional])* Adds a Layer to to the LayerManager. The layer parameter can be a complex object that is a Layer template, or a constructed Layer. If it is a constructed Layer isLayer must be set to true.
+_Private_ *addLayer(Object layer, Bool isLayer `[optional]`)* Adds a Layer to to the LayerManager. The layer parameter can be a complex object that is a Layer template, or a constructed Layer. If it is a constructed Layer isLayer must be set to true.
 
 _Private_ *promoteLayer(String layerID)* Finds a Layer by the string identifier layerID, then adjusts it's order so that it is drawn after other Layers. Here is an example;
 
