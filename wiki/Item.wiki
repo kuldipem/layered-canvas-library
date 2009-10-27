@@ -3,13 +3,13 @@
 
 = Canvas.Item =
 
-An Item is essentially an object that is stored within a Layer. The item implements it's own draw function, but is able, and intended to be drawn from within the Layer or LayerManager.
+An Item is essentially an object that is stored within a Layer. The item implements it's own draw function, but is able, and intended to be drawn from within the [http://code.google.com/p/layered-canvas-library/wiki/Layer Layer] or [http://code.google.com/p/layered-canvas-library/wiki/LayerManager LayerManager].
 
 = Canvas.Item.constructor =
 
-The Item constructor takes a complex object, and optionally the Layer it should be added to. It returns the constructed Item. At the constructor method simple error checking takes place to verify that no two Item(s) have the same ID.
+The Item constructor takes a complex object, and optionally the [http://code.google.com/p/layered-canvas-library/wiki/Layer Layer] it should be added to. It returns the constructed Item. At the constructor method simple error checking takes place to verify that no two Item's have the same ID.
 
-The constructed object is automatically added to the ObjectManager.
+The constructed object is automatically added to the [http://code.google.com/p/layered-canvas-library/wiki/ObjectManager ObjectManager].
 
 == Object Parameters ==
 
@@ -31,11 +31,11 @@ The height of the object. This must be set if the Item listens for mouse events.
 _Public_ *Integer width*
 The width of the object. This must be set if the Item listens for mouse events.
 
-_Private_ *Layer layer*
-The parent Layer of the object. This is automatically set by the library if the Item was created by use of a Layer constructor.
+_Private_ *[http://code.google.com/p/layered-canvas-library/wiki/Layer Layer] layer*
+The parent Layer of the object. This is automatically set by the library if the Item was created by use of a [http://code.google.com/p/layered-canvas-library/wiki/Layer Layer] constructor.
 
-_Private_ *Canvas superParent*
-The super parent Canvas object. This is automatically set by the library.
+_Private_ *[http://code.google.com/p/layered-canvas-library/wiki/Canvas Canvas] superParent*
+The super parent [http://code.google.com/p/layered-canvas-library/wiki/Canvas Canvas]  object. This is automatically set by the library.
 
 *Object on*
 Defines a set of events to listen for. An Item can listen to the following events;
@@ -62,7 +62,7 @@ Events should be defined as,
 
 _Public_ *getLayer()* Returns the Item's parent Layer, if it's set.
 
-_Public_ *draw(DOMCanvasContext ctx)* This method is intended to be overridden by the user. If the draw method is called from the parent Layer or LayerManager, the ctx variable will be set to the Canvas context.
+_Public_ *draw(DOMCanvasContext ctx)* This method is intended to be overridden by the user. If the draw method is called from the parent [http://code.google.com/p/layered-canvas-library/wiki/Layer Layer] or [http://code.google.com/p/layered-canvas-library/wiki/LayerManager LayerManager], the ctx variable will be set to the [http://code.google.com/p/layered-canvas-library/wiki/Canvas Canvas] context.
 
 _Public_ *getID()* Returns the Item's ID.
 
@@ -76,7 +76,7 @@ _Public_ *hasEvent(String type)* Determines if the event 'type' has been defined
 
 _Public_ *getEvent(String type)* Searches for and returns the event defined at 'type'.
 
-_Private_ *fireEvent(DOMEvent event, String type, DOMCanvasContext ctx, Item obj)* Private method invoked by the ObjectManager singleton class when the event is fired from the window.
+_Private_ *fireEvent(DOMEvent event, String type, DOMCanvasContext ctx, Item obj)* Private method invoked by the [http://code.google.com/p/layered-canvas-library/wiki/ObjectManager ObjectManager] singleton class when the event is fired from the window.
 
 _Private_ *toString()* Returns "`[Canvas.Item]`" for the window.
 
