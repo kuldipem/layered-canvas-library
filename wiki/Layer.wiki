@@ -1,8 +1,8 @@
 #summary A Canvas.Layer is a complex object that contains Item(s).
 
-= Introduction =
+= Canvas.Layer =
 
-[http://code.google.com/p/layered-canvas-library/wiki/Item Item]
+
 
 Add your content here.
 
