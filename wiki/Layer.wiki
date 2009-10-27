@@ -1,4 +1,4 @@
-#summary Canvas.Layer is a complex object that contains Item(s), and is contained by the [http://code.google.com/p/layered-canvas-library/wiki/LayerManager LayerManager].
+#summary Canvas.Layer is a complex object that contains Item(s), and is contained by the LayerManager.
 #labels Phase-Implementation
 
 = Canvas.Layer =
