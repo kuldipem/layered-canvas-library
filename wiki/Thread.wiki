@@ -11,7 +11,7 @@ The constructor method takes a complex object and returns a constructed Thread.
 
 The constructed Thread is automatically added to the ThreadManager.
 
-== Object Paramters ==
+== Object Parameters ==
 
 _Public_ *String id* The string identifier for Thread.
 
