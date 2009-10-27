@@ -5,11 +5,11 @@
 
 LayerManager is a singleton class that manages Layers as well as Items within lay within the Layers. You access it simply by invoking it's name, and methods. Canvas.LayerManager.findLayer("layerID"); for example.
 
-= Properties =
+== Properties ==
 
 _Private_ *Array Layers* An array that contains the Layers that the LayerManager manages.
 
-= Methods =
+== Methods ==
 
 _Private_ *draw(DOMCanvasContext ctx)* This method fires the draw function of each Layer it manages, which in turn fires the draw method on each Item, the Layers contain.
 
