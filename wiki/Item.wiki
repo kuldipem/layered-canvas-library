@@ -31,9 +31,6 @@ The height of the object. This must be set if the Item listens for mouse events.
 _Public_ *Integer width*
 The width of the object. This must be set if the Item listens for mouse events.
 
-_Private_ *[http://code.google.com/p/layered-canvas-library/wiki/Layer Layer] layer*
-The parent Layer of the object. This is automatically set by the library if the Item was created by use of a [http://code.google.com/p/layered-canvas-library/wiki/Layer Layer] constructor.
-
 _Public_ *Object on*
 Defines a set of events to listen for. An Item can listen to the following events;
 
@@ -53,6 +50,9 @@ Events should be defined as,
       "eventName" : function (DOMEvent event, String type, DOMCanvasContext ctx, Item obj) {}
    }
 }}}
+
+_Private_ *[http://code.google.com/p/layered-canvas-library/wiki/Layer Layer] layer*
+The parent Layer of the object. This is automatically set by the library if the Item was created by use of a [http://code.google.com/p/layered-canvas-library/wiki/Layer Layer] constructor.
 
 _Private_ *[http://code.google.com/p/layered-canvas-library/wiki/Canvas Canvas] superParent*
 The super parent [http://code.google.com/p/layered-canvas-library/wiki/Canvas Canvas]  object. This is automatically set by the library.
