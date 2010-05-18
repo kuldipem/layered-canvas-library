@@ -11,7 +11,7 @@
 	/**
 	 * @var version {String} Stores the current version
 	 */
-	version : '1.2.1',
+	version : '1.3.1',
 	/**
 	 * @var author {String} Stores the library author
 	 */
