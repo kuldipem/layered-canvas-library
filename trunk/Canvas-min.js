@@ -1,4 +1,4 @@
-(function(){var Canvas=this.Canvas={version:'1.2.1',author:"Michael Camden",elID:"",el:null,elCtx:null,x:0,y:0,getEl:function(){if(this.el!=null&&typeof(this.el)!="undefined"){return this.el;}
+(function(){var Canvas=this.Canvas={version:'1.3.1',author:"Michael Camden",elID:"",el:null,elCtx:null,x:0,y:0,getEl:function(){if(this.el!=null&&typeof(this.el)!="undefined"){return this.el;}
 else{return false;}},setEl:function(elID,dimension){if(typeof(elID)=="string"){var _el=document.getElementById(elID);if(_el!=null&&_el.tagName=="CANVAS"){this.el=_el;this.elID=elID;if(typeof(dimension)!="undefined"){this.setCtx(dimension);}}}else if(typeof(elID)=="object"){if(elID.tagName&&elID.tagName=="CANVAS"){this.el=elID;this.elID=elID.id||"__canvas";if(typeof(dimension)!="undefined"){this.setCtx(dimension);}}}else{Canvas.util.debug("elID not proper object, or string.");}
 if(this.el==null||typeof(this.el)=="undefined"){return false;}
 this.el.onmousemove=this.fireEvent;this.el.onclick=this.fireEvent;this.el.ondblclick=this.fireEvent
